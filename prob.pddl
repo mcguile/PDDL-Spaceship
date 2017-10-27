@@ -24,27 +24,13 @@
   )
 
   (:init
-      ;all planets must be adjacent bidirectionally
-      (adjacent venus mercury)
-      (adjacent mercury venus)
-      (adjacent earth venus)
-      (adjacent venus earth)
-      (adjacent mars earth)
-      (adjacent earth mars)
-      (adjacent jupiter mars)
-      (adjacent mars jupiter)
-      (adjacent jupiter saturn)
-      (adjacent saturn jupiter)
-      (adjacent uranus saturn)
-      (adjacent saturn uranus)
-
       ;planets in an asteroid belt -
       ;any visits to these planets damage the ship
       (in_belt saturn belt1)
 
       ;where da ppl at
       ; planets
-      (person_at sci saturn)
+      (person_on_planet sci saturn)
 
       ; rooms on ship
       (person_in_room cap cargobay1)
@@ -97,5 +83,5 @@
       (not robotCharged rob)
     )
 
-    (:goal (and (person_at cap earth)))
+    (:goal (and (person_on_planet cap earth) (ship_at jupiter)))
   )

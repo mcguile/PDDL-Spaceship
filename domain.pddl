@@ -22,11 +22,10 @@
     )
 
     (:predicates
-        (adjacent ?p1 ?p2 - planet)
         (in_belt ?p - planet ?ab - abelt)
         (ship_at ?p - planet)
         (person_in_room ?per - personnel ?r - room)
-        (person_at ?per - personnel ?pl - planet)
+        (person_on_planet ?per - personnel ?pl - planet)
         (equipment_in_room ?e - equipment ?r - room)
         (equipment_at ?e - equipment ?pl - planet)
         (lift ?d1 ?d2 - deck)
@@ -48,14 +47,14 @@
 
     (:action transport_to_ship
         :parameters (?p - personnel ?rm - transporter ?from - planet)
-        :precondition (and (person_at ?p ?from) (not (person_in_room ?p ?rm)))
-        :effect (and (person_in_room ?p ?rm) (not (person_at ?p ?from)))
+        :precondition (and (person_on_planet ?p ?from) (not (person_in_room ?p ?rm)))
+        :effect (and (person_in_room ?p ?rm) (not (person_on_planet ?p ?from)))
     )
 
     (:action transport_to_planet
         :parameters (?p - personnel ?rm - transporter ?to - planet)
-        :precondition (and (person_in_room ?p ?rm) (not (person_at ?p ?to)))
-        :effect (and (not (person_in_room ?p ?rm)) (person_at ?p ?to))
+        :precondition (and (person_in_room ?p ?rm) (not (person_on_planet ?p ?to)))
+        :effect (and (not (person_in_room ?p ?rm)) (person_on_planet ?p ?to))
     )
 
     (:action charge_robot
@@ -97,7 +96,6 @@
                      ?ab - abelt ?from ?to - planet)
         :precondition (and (person_in_room ?nav ?r)
                            (travel_order ?trv)
-                           (adjacent ?from ?to)
                            (ship_at ?from)
                            (not (damaged ?s)))
         :effect (and (ship_at ?to)
