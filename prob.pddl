@@ -2,9 +2,11 @@
   (:domain spaceship-1-1)
   (:objects
       sship - ship
-      captain - capt
+      cap - capt
       nav - navig
       eng - engineer
+      sci - sciencist
+      rob - robot
       lower1 - lower
       middle1 - middle
       upper1 - upper
@@ -28,21 +30,24 @@
       (adjacent venus earth)
       (adjacent mars earth)
       (adjacent earth mars)
-      (adjacent saturn mars)
-      (adjacent mars saturn)
+      (adjacent jupiter mars)
+      (adjacent mars jupiter)
       (adjacent jupiter saturn)
       (adjacent saturn jupiter)
-      (adjacent uranus jupiter)
-      (adjacent jupiter uranus)
+      (adjacent uranus saturn)
+      (adjacent saturn uranus)
 
       ;planets in an asteroid belt -
       ;any visits to these planets damage the ship
       (in_belt saturn belt1)
 
       ;where da ppl at
-      (person_at captain cargobay1)
-      (person_at nav cargobay1)
-      (person_at eng bridge1)
+      (person_at cap sship)
+      (person_at sci saturn)
+      (person_in_room cap cargobay1)
+      (person_in_room nav cargobay1)
+      (person_in_room eng bridge1)
+      (person_in_room rob cargobay1)
 
       ;connecting lifts between decks - bidirectional
       ;it is assumed all rooms have a lift and
@@ -82,8 +87,10 @@
 
       ;ship can only travel if travel order given
       (not travel_order trvl)   ;internal brackets not required here
-                                ;+ ruins editor syntax highlighting
+                                ;+ ruins editor syntax highlighting#
+
+      (not robotCharged rob)
   )
 
-  (:goal (and (person_at nav cargobay1) (ship_at sship jupiter)))
+  (:goal (and (person_at cap jupiter)(robotCharged rob)(person_at sci sship)))
 )
