@@ -26,9 +26,9 @@
         (in_belt ?p - planet ?ab - abelt)
         (ship_at ?p - planet)
         (person_in_room ?per - personnel ?r - room)
-        (person_at ?per - personnel ?pl - planet)  ;planet or ship
+        (person_at ?per - personnel ?pl - planet)
         (equipment_in_room ?e - equipment ?r - room)
-        (equipment_at ?e - equipment ?l - location)
+        (equipment_at ?e - equipment ?pl - planet)
         (lift ?d1 ?d2 - deck)
         (door ?r1 ?r2 - room)
         (room_on_deck ?r - room ?d - deck)

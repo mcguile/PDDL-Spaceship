@@ -43,14 +43,16 @@
       (in_belt saturn belt1)
 
       ;where da ppl at
+      ; planets
       (person_at sci saturn)
+
+      ; rooms on ship
       (person_in_room cap cargobay1)
       (person_in_room nav cargobay1)
       (person_in_room eng bridge1)
       (person_in_room rob cargobay1)
 
       ;where da equipment at
-      (equipment_at sship)
       (equipment_in_room transporter1)
 
       ;connecting lifts between decks - bidirectional
