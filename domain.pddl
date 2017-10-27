@@ -7,8 +7,9 @@
     )
 
     (:types
-        location
-        planet abelt ship - location
+        planet
+        ship
+        abelt
         deck
         lower middle upper - deck
         room
@@ -23,9 +24,11 @@
     (:predicates
         (adjacent ?p1 ?p2 - planet)
         (in_belt ?p - planet ?ab - abelt)
-        (ship_at ?s - ship ?p - planet)
+        (ship_at ?p - planet)
         (person_in_room ?per - personnel ?r - room)
-        (person_at ?per - personnel ?l - location)  ;planet or ship
+        (person_at ?per - personnel ?pl - planet)  ;planet or ship
+        (equipment_in_room ?e - equipment ?r - room)
+        (equipment_at ?e - equipment ?l - location)
         (lift ?d1 ?d2 - deck)
         (door ?r1 ?r2 - room)
         (room_on_deck ?r - room ?d - deck)
@@ -34,20 +37,25 @@
         (robotCharged ?r - robot)
     )
 
-    (:action person_to_ship
-        :parameters (?p - personnel ?rm - transporter ?from ?to - location)
-        :precondition (and (not (person_at ?p ?to))
-                           (person_at ?p ?from) (ship_at ?to ?from))
-        :effect (and (person_in_room ?p ?rm) (not (person_at ?p ?from))
-                     (person_at ?p ?to))
+
+; NOTE ON ACTIONS - Even though locations of personnel or equipment will be
+; implied (i.e. if person is at ship then person is not somewhere else)
+; more memory is used to find a plan. Most likely it believes the person
+; is at BOTH locations. It may seem like overkill, but we ensure all changed
+; states are noted as such e.g. (and (not (in_room x) (in_room y)))
+
+
+
+    (:action transport_to_ship
+        :parameters (?p - personnel ?rm - transporter ?from - planet)
+        :precondition (and (person_at ?p ?from) (not (person_in_room ?p ?rm)))
+        :effect (and (person_in_room ?p ?rm) (not (person_at ?p ?from)))
     )
 
-    (:action person_to_planet
-        :parameters (?p - personnel ?rm - transporter ?from ?to - location)
-        :precondition (and (person_in_room ?p ?rm) (not (person_at ?p ?to))
-                           (person_at ?p ?from) (ship_at ?from ?to))
-        :effect (and (not (person_in_room ?p ?rm)) (not (person_at ?p ?from))
-                     (person_at ?p ?to))
+    (:action transport_to_planet
+        :parameters (?p - personnel ?rm - transporter ?to - planet)
+        :precondition (and (person_in_room ?p ?rm) (not (person_at ?p ?to)))
+        :effect (and (not (person_in_room ?p ?rm)) (person_at ?p ?to))
     )
 
     (:action charge_robot
@@ -55,8 +63,7 @@
         :precondition (and (not (robotCharged ?rbt))
                           (person_in_room ?rbt ?rm))
         :effect (and (robotCharged ?rbt))
-
-      )
+    )
 
     (:action order_travel
         :parameters (?cpt - capt ?r - bridge ?trv - travelorder)
@@ -91,10 +98,10 @@
         :precondition (and (person_in_room ?nav ?r)
                            (travel_order ?trv)
                            (adjacent ?from ?to)
-                           (ship_at ?s ?from)
+                           (ship_at ?from)
                            (not (damaged ?s)))
-        :effect (and (ship_at ?s ?to)
-                     (not (ship_at ?s ?from))
+        :effect (and (ship_at ?to)
+                     (not (ship_at ?from))
                      (when (in_belt ?to ?ab)(damaged ?s)))
     )
 

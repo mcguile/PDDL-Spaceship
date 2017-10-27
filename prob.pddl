@@ -20,6 +20,7 @@
       trvl - travelorder
       mercury venus earth mars saturn jupiter uranus neptune - planet
       belt1 - abelt
+      light1 - light
   )
 
   (:init
@@ -42,12 +43,15 @@
       (in_belt saturn belt1)
 
       ;where da ppl at
-      (person_at cap sship)
       (person_at sci saturn)
       (person_in_room cap cargobay1)
       (person_in_room nav cargobay1)
       (person_in_room eng bridge1)
       (person_in_room rob cargobay1)
+
+      ;where da equipment at
+      (equipment_at sship)
+      (equipment_in_room transporter1)
 
       ;connecting lifts between decks - bidirectional
       ;it is assumed all rooms have a lift and
@@ -82,15 +86,14 @@
       (room_on_deck transporter1 upper1)
 
       ;ship initial conditions
-      (ship_at sship earth)
+      (ship_at earth)
       (damaged sship)
 
       ;ship can only travel if travel order given
-      (not travel_order trvl)   ;internal brackets not required here
-                                ;+ ruins editor syntax highlighting#
+      (not travel_order trvl)
 
       (not robotCharged rob)
-  )
+    )
 
-  (:goal (and (person_at cap jupiter)(robotCharged rob)(person_at sci sship)))
-)
+    (:goal (and (person_at cap earth)))
+  )
