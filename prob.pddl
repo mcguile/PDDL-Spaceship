@@ -18,17 +18,16 @@
       transporter1 - transporter
       shuttlebay1 - shuttlebay
       sciencelab1 - sciencelab
-      trvl - travelorder
       mercury venus earth mars saturn jupiter uranus neptune - planet
-      belt1 - abelt
       light1 - light
       plasma1 - plasma
+      heavy1 - heavy
   )
 
   (:init
       ;planets in an asteroid belt -
       ;any visits to these planets damage the ship
-      (in_belt saturn belt1)
+      (in_belt saturn)
 
       ;where da ppl at
       ; planets
@@ -43,6 +42,7 @@
 
       ;where da equipment at
       (equip_in_room light1 transporter1)
+      (equip_in_room heavy1 cargobay1)
       (equip_on_planet plasma1 earth)
 
       ;connecting lifts between decks - bidirectional
@@ -83,10 +83,10 @@
       (damaged transporter1)
 
       ;ship can only travel if travel order given
-      (not travel_order trvl)
+      (not travel_order)
 
-      (not robotCharged rob)
+      (not robot_charged)
     )
 
-    (:goal (and (equip_on_planet light1 earth)))
+    (:goal (and (equip_in_room heavy1 transporter1) (not (robot_charged)) (ship_at mars)))
   )
