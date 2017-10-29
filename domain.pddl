@@ -9,13 +9,12 @@
     (:types
         planet
         ship
-        abelt
         deck
         lower middle upper - deck
         room
         bridge engineering sickbay transporter shuttlebay sciencelab cargobay - room
         personnel
-        robot capt engineer sciencist navig medic sec transChief - personnel
+        capt engineer sciencist navig medic sec transChief robot - personnel
         equipment
         light heavy medical - equipment
         travelorder
@@ -25,7 +24,7 @@
     )
 
     (:predicates
-        (in_belt ?p - planet ?ab - abelt)
+        (in_belt ?p - planet)
         (ship_at ?p - planet)
         (person_in_room ?per - personnel ?r - room)
         (person_on_planet ?per - personnel ?pl - planet)
@@ -36,10 +35,11 @@
         (lift ?d1 ?d2 - deck)
         (door ?r1 ?r2 - room)
         (room_on_deck ?r - room ?d - deck)
-        (travel_order ?trv - travelorder)
+        (travel_order)
         (damaged ?s - ship)
         (damaged ?t - transporter)
-        (robotCharged ?r - robot)
+        (robot_charged)
+        (robot_holding ?e - equipment)
     )
 
 
@@ -49,6 +49,33 @@
 ; is at BOTH locations. It may seem like overkill, but we ensure all changed
 ; states are noted as such e.g. (and (not (in_room x) (in_room y)))
 
+    ; pickup and drop could have been combined into one action, but
+    ;splitting into individual actions allows pickup, move, and drop
+    ;all to be displayed in the planner whilst utilizing an existing
+    ;travel action
+    (:action rob_pickup_equip
+        :parameters (?rob - robot ?e - equipment ?rm - room)
+        :precondition (and (robot_charged)
+                           (person_in_room ?rob ?rm)
+                           (equip_in_room ?e ?rm))
+        :effect (and (robot_holding ?e)
+                     (not (equip_in_room ?e ?rm)))
+    )
+
+    ;TODO: Currently a temp variable heavy is compared vs equipment
+    ;to determine if it's of type heavy
+    ;This does not work ultimately as two different heavy variables will not
+    ;be equal to each other
+    ;May need separate predicates.
+    (:action rob_drop_equip
+      :parameters (?h - heavy ?rob - robot ?e - equipment ?rm - room)
+      :precondition (and (robot_holding ?e)
+                         (person_in_room ?rob ?rm))
+      :effect (and (equip_in_room ?e ?rm)
+                   (not (robot_holding ?e))
+                   (when ( = ?h ?e) (not (robot_charged))))
+    )
+
     (:action transport_equip_to_planet
         :parameters (?trc - transChief ?e - light ?rm - transporter ?to - planet)
         :precondition (and (not (equip_on_planet ?e ?to)) (person_in_room ?trc ?rm)
@@ -57,8 +84,9 @@
                      (equip_on_planet ?e ?to))
     )
 
+    ;TODO: Same as heavy temp variable but for plasma.
     (:action transport_equip_to_ship
-        :parameters (?trc - transChief ?e - light ?pl - plasma
+        :parameters (?pl - p ?trc - transChief ?e - light ?r - robotlasma
                    ?rm - transporter ?from - planet)
         :precondition (and (equip_on_planet ?e ?from) (person_in_room ?trc ?rm)
                          (not (equip_in_room ?e ?rm)) (not (damaged ?rm)))
@@ -84,15 +112,15 @@
 
     (:action charge_robot
         :parameters (?rbt - robot ?rm - sciencelab)
-        :precondition (and (not (robotCharged ?rbt))
+        :precondition (and (not (robot_charged))
                           (person_in_room ?rbt ?rm))
-        :effect (and (robotCharged ?rbt))
+        :effect (and (robot_charged))
     )
 
     (:action order_travel
-        :parameters (?cpt - capt ?r - bridge ?trv - travelorder)
+        :parameters (?cpt - capt ?r - bridge)
         :precondition (and (person_in_room ?cpt ?r))
-        :effect (and (travel_order ?trv))
+        :effect (and (travel_order))
     )
 
     (:action use_lift
@@ -117,15 +145,14 @@
     )
 
     (:action travel
-        :parameters (?s - ship ?trv - travelorder ?nav - navig ?rm - bridge
-                     ?ab - abelt ?from ?to - planet)
+        :parameters (?s - ship ?nav - navig ?rm - bridge ?from ?to - planet)
         :precondition (and (person_in_room ?nav ?rm)
-                           (travel_order ?trv)
+                           (travel_order)
                            (ship_at ?from)
                            (not (damaged ?s)))
         :effect (and (ship_at ?to)
                      (not (ship_at ?from))
-                     (when (in_belt ?to ?ab)(damaged ?s)))
+                     (when (in_belt ?to)(damaged ?s)))
     )
 
     (:action fix_ship
