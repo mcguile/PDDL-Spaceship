@@ -6,6 +6,7 @@
       nav - navig
       eng - engineer
       sci - sciencist
+      trc - transChief
       rob - robot
       lower1 - lower
       middle1 - middle
@@ -21,6 +22,7 @@
       mercury venus earth mars saturn jupiter uranus neptune - planet
       belt1 - abelt
       light1 - light
+      plasma1 - plasma
   )
 
   (:init
@@ -36,10 +38,12 @@
       (person_in_room cap cargobay1)
       (person_in_room nav cargobay1)
       (person_in_room eng bridge1)
+      (person_in_room trc transporter1)
       (person_in_room rob cargobay1)
 
       ;where da equipment at
-      (equipment_in_room transporter1)
+      (equip_in_room light1 transporter1)
+      (equip_on_planet plasma1 earth)
 
       ;connecting lifts between decks - bidirectional
       ;it is assumed all rooms have a lift and
@@ -76,6 +80,7 @@
       ;ship initial conditions
       (ship_at earth)
       (damaged sship)
+      (damaged transporter1)
 
       ;ship can only travel if travel order given
       (not travel_order trvl)
@@ -83,5 +88,5 @@
       (not robotCharged rob)
     )
 
-    (:goal (and (person_on_planet cap earth) (ship_at jupiter)))
+    (:goal (and (equip_on_planet light1 earth)))
   )
