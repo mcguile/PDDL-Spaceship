@@ -41,6 +41,8 @@
       (person_in_room rob cargobay1)
 
       ;where da equipment at
+      (is_heavy heavy1)
+      (is_plasma plasma1)
       (equip_in_room light1 transporter1)
       (equip_in_room heavy1 cargobay1)
       (equip_on_planet plasma1 earth)

@@ -32,6 +32,8 @@
         ;enables one predicate catch-all
         (equip_in_room ?e - equipment ?r - room)
         (equip_on_planet ?e - equipment ?pl - planet)
+        (is_heavy ?e)
+        (is_plasma ?e)
         (lift ?d1 ?d2 - deck)
         (door ?r1 ?r2 - room)
         (room_on_deck ?r - room ?d - deck)
@@ -62,18 +64,13 @@
                      (not (equip_in_room ?e ?rm)))
     )
 
-    ;TODO: Currently a temp variable heavy is compared vs equipment
-    ;to determine if it's of type heavy
-    ;This does not work ultimately as two different heavy variables will not
-    ;be equal to each other
-    ;May need separate predicates.
     (:action rob_drop_equip
-      :parameters (?h - heavy ?rob - robot ?e - equipment ?rm - room)
+      :parameters (?rob - robot ?e - equipment ?rm - room)
       :precondition (and (robot_holding ?e)
                          (person_in_room ?rob ?rm))
       :effect (and (equip_in_room ?e ?rm)
                    (not (robot_holding ?e))
-                   (when ( = ?h ?e) (not (robot_charged))))
+                   (when (is_heavy ?e) (not (robot_charged))))
     )
 
     (:action transport_equip_to_planet
@@ -84,15 +81,14 @@
                      (equip_on_planet ?e ?to))
     )
 
-    ;TODO: Same as heavy temp variable but for plasma.
     (:action transport_equip_to_ship
-        :parameters (?pl - p ?trc - transChief ?e - light ?r - robotlasma
+        :parameters (?trc - transChief ?e - light ?r - robotlasma
                    ?rm - transporter ?from - planet)
         :precondition (and (equip_on_planet ?e ?from) (person_in_room ?trc ?rm)
                          (not (equip_in_room ?e ?rm)) (not (damaged ?rm)))
         :effect (and (equip_in_room ?e ?rm)
                      (not (equip_on_planet ?e ?from))
-                     (when ( = ?pl ?e) (damaged ?rm)))
+                     (when (is_plasma ?e) (damaged ?rm)))
                      ;if the equipment is plamsa, damage the transporter
     )
 
