@@ -26,12 +26,12 @@
     (:predicates
         (in_belt ?p - planet)
         (ship_at ?p - planet)
-        (person_in_room ?per - personnel ?r - room)
-        (person_on_planet ?per - personnel ?pl - planet)
+        (person_at ?per - personnel ?r - room)
+        (person_at ?per - personnel ?pl - planet)
         ;equipment includes heavy, light, medical, rock samples and plasma
         ;enables one predicate catch-all
-        (equip_in_room ?e - equipment ?r - room)
-        (equip_on_planet ?e - equipment ?pl - planet)
+        (equip_at ?e - equipment ?r - room)
+        (equip_at ?e - equipment ?pl - planet)
         (is_heavy ?e)
         (is_plasma ?e)
         (lift ?d1 ?d2 - deck)
@@ -42,6 +42,8 @@
         (damaged ?t - transporter)
         (robot_charged)
         (robot_holding ?e - equipment)
+        (shuttleCraftAt ?rm - shuttlebay)
+        (shuttleCraftAt ?p - planet)
     )
 
 
@@ -51,98 +53,127 @@
 ; is at BOTH locations. It may seem like overkill, but we ensure all changed
 ; states are noted as such e.g. (and (not (in_room x) (in_room y)))
 
-    ; pickup and drop could have been combined into one action, but
+    (:action shuttlecraft_to_planet
+        :parameters(?rm - shuttlebay ?p - personnel
+                    ?pl - planet ?e - equipment)
+        :precondition (and (person_at ?p ?rm)
+                           (equip_at ?e ?rm)
+                           (shuttleCraftAt ?rm)
+                           (not (shuttleCraftAt ?pl)))
+        :effect (and (not (person_at ?p ?rm))
+                     (not (shuttleCraftAt ?rm))
+                     (not (equip_at ?e ?rm))
+                     (equip_at ?e ?pl)
+                     (person_at ?p ?pl)
+                     (shuttleCraftAt ?pl))
+   )
+
+   (:action shuttlecraft_to_ship
+       :parameters(?rm - shuttlebay ?p - personnel ?s - ship
+                   ?pl - planet ?e - equipment)
+       :precondition(and (person_at ?p ?pl)
+                         (equip_at ?e ?pl)
+                         (shuttleCraftAt ?pl))
+       :effect (and (not (person_at ?p ?pl))
+                    (not (shuttleCraftAt ?pl))
+                    (not (equip_at ?e ?pl))
+                    (equip_at ?e ?rm)
+                    (person_at ?p ?rm)
+                    (shuttleCraftAt ?s))
+  )
+
+    ;pickup and drop could have been combined into one action, but
     ;splitting into individual actions allows pickup, move, and drop
     ;all to be displayed in the planner whilst utilizing an existing
     ;travel action
     (:action rob_pickup_equip
         :parameters (?rob - robot ?e - equipment ?rm - room)
         :precondition (and (robot_charged)
-                           (person_in_room ?rob ?rm)
-                           (equip_in_room ?e ?rm))
+                           (person_at ?rob ?rm)
+                           (equip_at ?e ?rm))
         :effect (and (robot_holding ?e)
-                     (not (equip_in_room ?e ?rm)))
+                     (not (equip_at ?e ?rm)))
     )
 
     (:action rob_drop_equip
       :parameters (?rob - robot ?e - equipment ?rm - room)
       :precondition (and (robot_holding ?e)
-                         (person_in_room ?rob ?rm))
-      :effect (and (equip_in_room ?e ?rm)
+                         (person_at ?rob ?rm))
+      :effect (and (equip_at ?e ?rm)
                    (not (robot_holding ?e))
                    (when (is_heavy ?e) (not (robot_charged))))
     )
 
     (:action transport_equip_to_planet
         :parameters (?trc - transChief ?e - light ?rm - transporter ?to - planet)
-        :precondition (and (not (equip_on_planet ?e ?to)) (person_in_room ?trc ?rm)
-                           (equip_in_room ?e ?rm) (not (damaged ?rm)))
-        :effect (and (not (equip_in_room ?e ?rm))
-                     (equip_on_planet ?e ?to))
+        :precondition (and (not (equip_at ?e ?to)) (person_at ?trc ?rm)
+                           (equip_at ?e ?rm) (not (damaged ?rm)))
+        :effect (and (not (equip_at ?e ?rm))
+                     (equip_at ?e ?to))
     )
 
     (:action transport_equip_to_ship
         :parameters (?trc - transChief ?e - light ?r - robotlasma
                    ?rm - transporter ?from - planet)
-        :precondition (and (equip_on_planet ?e ?from) (person_in_room ?trc ?rm)
-                         (not (equip_in_room ?e ?rm)) (not (damaged ?rm)))
-        :effect (and (equip_in_room ?e ?rm)
-                     (not (equip_on_planet ?e ?from))
+        :precondition (and (equip_at ?e ?from) (person_at ?trc ?rm)
+                         (not (equip_at ?e ?rm)) (not (damaged ?rm)))
+        :effect (and (equip_at ?e ?rm)
+                     (not (equip_at ?e ?from))
                      (when (is_plasma ?e) (damaged ?rm)))
                      ;if the equipment is plamsa, damage the transporter
     )
 
     (:action transport_to_ship
         :parameters (?trc - transChief ?p - personnel ?rm - transporter ?from - planet)
-        :precondition (and (person_on_planet ?p ?from) (person_in_room ?trc ?rm)
-                          (not (person_in_room ?p ?rm)) (not (damaged ?rm)))
-        :effect (and (person_in_room ?p ?rm) (not (person_on_planet ?p ?from)))
+        :precondition (and (person_at ?p ?from) (person_at ?trc ?rm)
+                          (not (person_at ?p ?rm)) (not (damaged ?rm)))
+        :effect (and (person_at ?p ?rm) (not (person_at ?p ?from)))
     )
 
     (:action transport_to_planet
         :parameters (?trc - transChief ?p - personnel ?rm - transporter ?to - planet)
-        :precondition (and (person_in_room ?p ?rm) (person_in_room ?trc ?rm)
-                           (not (person_on_planet ?p ?to)) (not (damaged ?rm)))
-        :effect (and (not (person_in_room ?p ?rm)) (person_on_planet ?p ?to))
+        :precondition (and (person_at ?p ?rm) (person_at ?trc ?rm)
+                           (not (person_at ?p ?to)) (not (damaged ?rm)))
+        :effect (and (not (person_at ?p ?rm)) (person_at ?p ?to))
     )
 
     (:action charge_robot
         :parameters (?rbt - robot ?rm - sciencelab)
         :precondition (and (not (robot_charged))
-                          (person_in_room ?rbt ?rm))
+                          (person_at ?rbt ?rm))
         :effect (and (robot_charged))
     )
 
     (:action order_travel
         :parameters (?cpt - capt ?r - bridge)
-        :precondition (and (person_in_room ?cpt ?r))
+        :precondition (and (person_at ?cpt ?r))
         :effect (and (travel_order))
     )
 
     (:action use_lift
         :parameters (?p - personnel ?rfrom ?rto - room ?dfrom ?dto - deck)
-        :precondition (and (not (person_in_room ?p ?rto))
-                           (person_in_room ?p ?rfrom)
+        :precondition (and (not (person_at ?p ?rto))
+                           (person_at ?p ?rfrom)
                            (lift ?dfrom ?dto)
                            (room_on_deck ?rfrom ?dfrom)
                            (room_on_deck ?rto ?dto)
                            (not ( = ?dfrom ?dto)))
-        :effect (and (person_in_room ?p ?rto)
-                     (not (person_in_room ?p ?rfrom)))
+        :effect (and (person_at ?p ?rto)
+                     (not (person_at ?p ?rfrom)))
     )
 
     (:action use_door
       :parameters (?p - personnel ?rfrom ?rto - room)
-      :precondition (and (not (person_in_room ?p ?rto))
-                         (person_in_room ?p ?rfrom)
+      :precondition (and (not (person_at ?p ?rto))
+                         (person_at ?p ?rfrom)
                          (door ?rfrom ?rto))
-      :effect (and (person_in_room ?p ?rto)
-                   (not (person_in_room ?p ?rfrom)))
+      :effect (and (person_at ?p ?rto)
+                   (not (person_at ?p ?rfrom)))
     )
 
     (:action travel
         :parameters (?s - ship ?nav - navig ?rm - bridge ?from ?to - planet)
-        :precondition (and (person_in_room ?nav ?rm)
+        :precondition (and (person_at ?nav ?rm)
                            (travel_order)
                            (ship_at ?from)
                            (not (damaged ?s)))
@@ -153,13 +184,13 @@
 
     (:action fix_ship
         :parameters (?s - ship ?p - engineer ?rm - engineering)
-        :precondition (and (damaged ?s) (person_in_room ?p ?rm))
+        :precondition (and (damaged ?s) (person_at ?p ?rm))
         :effect (and (not (damaged ?s)))
     )
 
     (:action fix_transporter
-        :parameters (?t - transporter ?p - engineer ?rm - transporter)
-        :precondition (and (damaged ?t) (person_in_room ?p ?rm))
-        :effect (and (not (damaged ?t)))
+        :parameters (?p - engineer ?rm - transporter)
+        :precondition (and (damaged ?rm) (person_at ?p ?rm))
+        :effect (and (not (damaged ?rm)))
     )
 )

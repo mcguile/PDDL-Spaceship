@@ -31,21 +31,21 @@
 
       ;where da ppl at
       ; planets
-      (person_on_planet sci saturn)
+      (person_at sci saturn)
 
       ; rooms on ship
-      (person_in_room cap cargobay1)
-      (person_in_room nav cargobay1)
-      (person_in_room eng bridge1)
-      (person_in_room trc transporter1)
-      (person_in_room rob cargobay1)
+      (person_at cap cargobay1)
+      (person_at nav cargobay1)
+      (person_at eng bridge1)
+      (person_at trc transporter1)
+      (person_at rob cargobay1)
 
       ;where da equipment at
       (is_heavy heavy1)
       (is_plasma plasma1)
-      (equip_in_room light1 transporter1)
-      (equip_in_room heavy1 cargobay1)
-      (equip_on_planet plasma1 earth)
+      (equip_at light1 transporter1)
+      (equip_at heavy1 mars)
+      (equip_at plasma1 earth)
 
       ;connecting lifts between decks - bidirectional
       ;it is assumed all rooms have a lift and
@@ -83,6 +83,7 @@
       (ship_at earth)
       (damaged sship)
       (damaged transporter1)
+      (shuttleCraftAt shuttlebay1)
 
       ;ship can only travel if travel order given
       (not travel_order)
@@ -90,5 +91,5 @@
       (not robot_charged)
     )
 
-    (:goal (and (equip_in_room heavy1 transporter1) (not (robot_charged)) (ship_at mars)))
+    (:goal (and (equip_at heavy1 shuttlebay1)))
   )
