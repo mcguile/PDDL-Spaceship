@@ -17,10 +17,10 @@
         capt engineer sciencist navig medic sec transChief robot - personnel
         equipment
         light heavy medical - equipment
-        travelorder
-
-        rocksample - light    ;so transporter can take light equipment + samples
+        ;so transporter can take light equipment + samples
+        rocksample - light
         plasma - rocksample
+        travelorder
     )
 
     (:predicates
@@ -33,6 +33,7 @@
         ;enables one predicate catch-all
         (equip_at ?e - equipment ?r - room)
         (equip_at ?e - equipment ?pl - planet)
+        ;type checking predicates is_...
         (is_heavy ?e - equipment)
         (is_plasma ?e - equipment)
         (lift ?d1 ?d2 - deck)

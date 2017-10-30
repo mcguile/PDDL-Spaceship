@@ -22,7 +22,7 @@
       mercury venus earth mars saturn jupiter uranus neptune - planet
       light1 - light
       plasma1 - plasma
-      heavy1 - heavy
+      rover commsstation - heavy
   )
 
   (:init
@@ -45,10 +45,11 @@
       (not healthy cap)
 
       ;where da equipment at
-      (is_heavy heavy1)
+      (is_heavy rover)
+      (is_heavy commsstation)
       (is_plasma plasma1)
       (equip_at light1 transporter1)
-      (equip_at heavy1 mars)
+      (equip_at rover mars)
       (equip_at plasma1 earth)
 
       ;connecting lifts between decks - bidirectional
