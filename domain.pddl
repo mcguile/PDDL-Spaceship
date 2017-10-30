@@ -28,6 +28,7 @@
         (ship_at ?p - planet)
         (person_at ?per - personnel ?r - room)
         (person_at ?per - personnel ?pl - planet)
+        (healthy ?per - personnel)
         ;equipment includes heavy, light, medical, rock samples and plasma
         ;enables one predicate catch-all
         (equip_at ?e - equipment ?r - room)
@@ -58,49 +59,51 @@
     (:action shuttlecraft_to_planet
          :parameters(?rm - shuttlebay ?p - personnel ?pl - planet)
          :precondition (and (person_at ?p ?rm)
-                       (shuttleCraftAt ?rm)
-                       (not (shuttleCraftAt ?pl)))
+                            (shuttleCraftAt ?rm)
+                            (not (shuttleCraftAt ?pl))
+                            (healthy ?p))
          :effect (and (not (person_at ?p ?rm))
-                 (not (shuttleCraftAt ?rm))
-                 (person_at ?p ?pl)
-                 (shuttleCraftAt ?pl))
+                      (not (shuttleCraftAt ?rm))
+                      (person_at ?p ?pl)
+                      (shuttleCraftAt ?pl))
     )
 
     (:action shuttlecraft_to_ship
          :parameters(?rm - shuttlebay ?p - personnel ?pl - planet)
          :precondition(and (person_at ?p ?pl)
-                     (shuttleCraftAt ?pl))
+                           (shuttleCraftAt ?pl))
          :effect (and (not (person_at ?p ?pl))
-                (not (shuttleCraftAt ?pl))
-                (person_at ?p ?rm)
-                (shuttleCraftAt ?rm))
+                      (not (shuttleCraftAt ?pl))
+                      (person_at ?p ?rm)
+                      (shuttleCraftAt ?rm))
     )
 
     (:action loaded_shuttlecraft_to_planet
          :parameters(?rm - shuttlebay ?p - personnel ?pl - planet ?e - equipment)
          :precondition (and (person_at ?p ?rm)
-                           (equip_at ?e ?rm)
-                           (shuttleCraftAt ?rm)
-                           (not (shuttleCraftAt ?pl)))
+                            (equip_at ?e ?rm)
+                            (shuttleCraftAt ?rm)
+                            (not (shuttleCraftAt ?pl))
+                            (healthy ?p))
          :effect (and (not (person_at ?p ?rm))
-                     (not (shuttleCraftAt ?rm))
-                     (not (equip_at ?e ?rm))
-                     (equip_at ?e ?pl)
-                     (person_at ?p ?pl)
-                     (shuttleCraftAt ?pl))
+                      (not (shuttleCraftAt ?rm))
+                      (not (equip_at ?e ?rm))
+                      (equip_at ?e ?pl)
+                      (person_at ?p ?pl)
+                      (shuttleCraftAt ?pl))
     )
 
     (:action loaded_shuttlecraft_to_ship
         :parameters(?rm - shuttlebay ?p - personnel ?pl - planet ?e - equipment)
         :precondition(and (person_at ?p ?pl)
-                         (equip_at ?e ?pl)
-                         (shuttleCraftAt ?pl))
+                          (equip_at ?e ?pl)
+                          (shuttleCraftAt ?pl))
         :effect (and (not (person_at ?p ?pl))
-                    (not (shuttleCraftAt ?pl))
-                    (not (equip_at ?e ?pl))
-                    (equip_at ?e ?rm)
-                    (person_at ?p ?rm)
-                    (shuttleCraftAt ?rm))
+                     (not (shuttleCraftAt ?pl))
+                     (not (equip_at ?e ?pl))
+                     (equip_at ?e ?rm)
+                     (person_at ?p ?rm)
+                     (shuttleCraftAt ?rm))
     )
 
     ;pickup and drop could have been combined into one action, but
@@ -127,8 +130,11 @@
 
     (:action transport_equip_to_planet
         :parameters (?trc - transChief ?e - light ?rm - transporter ?to - planet)
-        :precondition (and (not (equip_at ?e ?to)) (person_at ?trc ?rm)
-                           (equip_at ?e ?rm) (not (damaged ?rm)))
+        :precondition (and (not (equip_at ?e ?to))
+                           (person_at ?trc ?rm)
+                           (equip_at ?e ?rm)
+                           (not (damaged ?rm))
+                           (healthy ?trc))
         :effect (and (not (equip_at ?e ?rm))
                      (equip_at ?e ?to))
     )
@@ -136,8 +142,11 @@
     (:action transport_equip_to_ship
         :parameters (?trc - transChief ?e - light ?r - robot
                    ?rm - transporter ?from - planet)
-        :precondition (and (equip_at ?e ?from) (person_at ?trc ?rm)
-                         (not (equip_at ?e ?rm)) (not (damaged ?rm)))
+        :precondition (and (equip_at ?e ?from)
+                           (person_at ?trc ?rm)
+                           (not (equip_at ?e ?rm))
+                           (not (damaged ?rm))
+                           (healthy ?trc))
         :effect (and (equip_at ?e ?rm)
                      (not (equip_at ?e ?from))
                      (when (is_plasma ?e) (damaged ?rm)))
@@ -146,28 +155,37 @@
 
     (:action transport_to_ship
         :parameters (?trc - transChief ?p - personnel ?rm - transporter ?from - planet)
-        :precondition (and (person_at ?p ?from) (person_at ?trc ?rm)
-                          (not (person_at ?p ?rm)) (not (damaged ?rm)))
-        :effect (and (person_at ?p ?rm) (not (person_at ?p ?from)))
+        :precondition (and (person_at ?p ?from)
+                           (person_at ?trc ?rm)
+                           (not (person_at ?p ?rm))
+                           (not (damaged ?rm)))
+        :effect (and (person_at ?p ?rm)
+                     (not (person_at ?p ?from)))
     )
 
     (:action transport_to_planet
         :parameters (?trc - transChief ?p - personnel ?rm - transporter ?to - planet)
-        :precondition (and (person_at ?p ?rm) (person_at ?trc ?rm)
-                           (not (person_at ?p ?to)) (not (damaged ?rm)))
-        :effect (and (not (person_at ?p ?rm)) (person_at ?p ?to))
+        :precondition (and (person_at ?p ?rm)
+                           (person_at ?trc ?rm)
+                           (not (person_at ?p ?to))
+                           (not (damaged ?rm))
+                           (healthy ?trc)
+                           (healthy ?p))
+        :effect (and (not (person_at ?p ?rm))
+                     (person_at ?p ?to))
     )
 
     (:action charge_robot
         :parameters (?rbt - robot ?rm - sciencelab)
         :precondition (and (not (robot_charged))
-                          (person_at ?rbt ?rm))
+                           (person_at ?rbt ?rm))
         :effect (and (robot_charged))
     )
 
     (:action order_travel
-        :parameters (?cpt - capt ?r - bridge)
-        :precondition (and (person_at ?cpt ?r))
+        :parameters (?p - capt ?r - bridge)
+        :precondition (and (person_at ?p ?r)
+                           (healthy ?p))
         :effect (and (travel_order))
     )
 
@@ -197,7 +215,8 @@
         :precondition (and (person_at ?nav ?rm)
                            (travel_order)
                            (ship_at ?from)
-                           (not (damaged ?s)))
+                           (not (damaged ?s))
+                           (healthy ?nav))
         :effect (and (ship_at ?to)
                      (not (ship_at ?from))
                      (when (in_belt ?to)(damaged ?s)))
@@ -205,13 +224,27 @@
 
     (:action fix_ship
         :parameters (?s - ship ?p - engineer ?rm - engineering)
-        :precondition (and (damaged ?s) (person_at ?p ?rm))
+        :precondition (and (damaged ?s)
+                           (person_at ?p ?rm)
+                           (healthy ?p))
         :effect (and (not (damaged ?s)))
     )
 
     (:action fix_transporter
         :parameters (?p - engineer ?rm - transporter)
-        :precondition (and (damaged ?rm) (person_at ?p ?rm))
+        :precondition (and (damaged ?rm)
+                           (person_at ?p ?rm)
+                           (healthy ?p))
         :effect (and (not (damaged ?rm)))
+    )
+
+    ;personnel can't act unless they are healthy
+    ;with the exception of using doors and lifts
+    (:action heal_personnel
+      :parameters (?m - medic ?rm - sickbay ?p - personnel)
+      :precondition (and (not (healthy ?p))
+                         (person_at ?p ?rm)
+                         (person_at ?m ?rm))
+      :effect (and (healthy ?p))
     )
 )

@@ -7,6 +7,7 @@
       eng - engineer
       sci - sciencist
       trc - transChief
+      med - medic
       rob - robot
       lower1 - lower
       middle1 - middle
@@ -32,13 +33,16 @@
       ;where da ppl at
       ; planets
       (person_at sci saturn)
-
       ; rooms on ship
       (person_at cap cargobay1)
       (person_at nav cargobay1)
       (person_at eng bridge1)
       (person_at trc transporter1)
+      (person_at med cargobay1)
       (person_at rob cargobay1)
+
+      ;health of people
+      (not healthy cap)
 
       ;where da equipment at
       (is_heavy heavy1)
@@ -91,5 +95,5 @@
       (not robot_charged)
     )
 
-    (:goal (and (equip_at heavy1 shuttlebay1)))
+    (:goal (and (healthy cap)))
   )
