@@ -32,8 +32,8 @@
         ;enables one predicate catch-all
         (equip_at ?e - equipment ?r - room)
         (equip_at ?e - equipment ?pl - planet)
-        (is_heavy ?e)
-        (is_plasma ?e)
+        (is_heavy ?e - equipment)
+        (is_plasma ?e - equipment)
         (lift ?d1 ?d2 - deck)
         (door ?r1 ?r2 - room)
         (room_on_deck ?r - room ?d - deck)
@@ -53,34 +53,55 @@
 ; is at BOTH locations. It may seem like overkill, but we ensure all changed
 ; states are noted as such e.g. (and (not (in_room x) (in_room y)))
 
+    ;FOUR shuttlecraft actions. Can travel with one and only one person onboard.
+    ;Two actions for lone traveller and two actions for traveller plus equipment.
     (:action shuttlecraft_to_planet
-        :parameters(?rm - shuttlebay ?p - personnel
-                    ?pl - planet ?e - equipment)
-        :precondition (and (person_at ?p ?rm)
+         :parameters(?rm - shuttlebay ?p - personnel ?pl - planet)
+         :precondition (and (person_at ?p ?rm)
+                       (shuttleCraftAt ?rm)
+                       (not (shuttleCraftAt ?pl)))
+         :effect (and (not (person_at ?p ?rm))
+                 (not (shuttleCraftAt ?rm))
+                 (person_at ?p ?pl)
+                 (shuttleCraftAt ?pl))
+    )
+
+    (:action shuttlecraft_to_ship
+         :parameters(?rm - shuttlebay ?p - personnel ?pl - planet)
+         :precondition(and (person_at ?p ?pl)
+                     (shuttleCraftAt ?pl))
+         :effect (and (not (person_at ?p ?pl))
+                (not (shuttleCraftAt ?pl))
+                (person_at ?p ?rm)
+                (shuttleCraftAt ?rm))
+    )
+
+    (:action loaded_shuttlecraft_to_planet
+         :parameters(?rm - shuttlebay ?p - personnel ?pl - planet ?e - equipment)
+         :precondition (and (person_at ?p ?rm)
                            (equip_at ?e ?rm)
                            (shuttleCraftAt ?rm)
                            (not (shuttleCraftAt ?pl)))
-        :effect (and (not (person_at ?p ?rm))
+         :effect (and (not (person_at ?p ?rm))
                      (not (shuttleCraftAt ?rm))
                      (not (equip_at ?e ?rm))
                      (equip_at ?e ?pl)
                      (person_at ?p ?pl)
                      (shuttleCraftAt ?pl))
-   )
+    )
 
-   (:action shuttlecraft_to_ship
-       :parameters(?rm - shuttlebay ?p - personnel ?s - ship
-                   ?pl - planet ?e - equipment)
-       :precondition(and (person_at ?p ?pl)
+    (:action loaded_shuttlecraft_to_ship
+        :parameters(?rm - shuttlebay ?p - personnel ?pl - planet ?e - equipment)
+        :precondition(and (person_at ?p ?pl)
                          (equip_at ?e ?pl)
                          (shuttleCraftAt ?pl))
-       :effect (and (not (person_at ?p ?pl))
+        :effect (and (not (person_at ?p ?pl))
                     (not (shuttleCraftAt ?pl))
                     (not (equip_at ?e ?pl))
                     (equip_at ?e ?rm)
                     (person_at ?p ?rm)
-                    (shuttleCraftAt ?s))
-  )
+                    (shuttleCraftAt ?rm))
+    )
 
     ;pickup and drop could have been combined into one action, but
     ;splitting into individual actions allows pickup, move, and drop
@@ -113,7 +134,7 @@
     )
 
     (:action transport_equip_to_ship
-        :parameters (?trc - transChief ?e - light ?r - robotlasma
+        :parameters (?trc - transChief ?e - light ?r - robot
                    ?rm - transporter ?from - planet)
         :precondition (and (equip_at ?e ?from) (person_at ?trc ?rm)
                          (not (equip_at ?e ?rm)) (not (damaged ?rm)))

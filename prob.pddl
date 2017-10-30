@@ -82,7 +82,7 @@
       ;ship initial conditions
       (ship_at earth)
       (damaged sship)
-      (damaged transporter1)
+      (not damaged transporter1)
       (shuttleCraftAt shuttlebay1)
 
       ;ship can only travel if travel order given
