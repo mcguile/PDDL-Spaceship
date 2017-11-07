@@ -26,6 +26,7 @@
     (:predicates
         (in_belt ?p - planet)
         (ship_at ?p - planet)
+        (is_hostile ?p - planet)
         (person_at ?per - personnel ?r - room)
         (person_at ?per - personnel ?pl - planet)
         (healthy ?per - personnel)
@@ -61,7 +62,7 @@
          :parameters(?rm - shuttlebay ?p - personnel ?pl - planet)
          :precondition (and (person_at ?p ?rm)
                             (shuttleCraftAt ?rm)
-                            (not (shuttleCraftAt ?pl))
+                            (ship_at ?pl)
                             (healthy ?p))
          :effect (and (not (person_at ?p ?rm))
                       (not (shuttleCraftAt ?rm))
@@ -72,6 +73,7 @@
     (:action shuttlecraft_to_ship
          :parameters(?rm - shuttlebay ?p - personnel ?pl - planet)
          :precondition(and (person_at ?p ?pl)
+                           (ship_at ?pl)
                            (shuttleCraftAt ?pl))
          :effect (and (not (person_at ?p ?pl))
                       (not (shuttleCraftAt ?pl))
@@ -84,7 +86,7 @@
          :precondition (and (person_at ?p ?rm)
                             (equip_at ?e ?rm)
                             (shuttleCraftAt ?rm)
-                            (not (shuttleCraftAt ?pl))
+                            (ship_at ?pl)
                             (healthy ?p))
          :effect (and (not (person_at ?p ?rm))
                       (not (shuttleCraftAt ?rm))
@@ -98,6 +100,7 @@
         :parameters(?rm - shuttlebay ?p - personnel ?pl - planet ?e - equipment)
         :precondition(and (person_at ?p ?pl)
                           (equip_at ?e ?pl)
+                          (ship_at ?pl)
                           (shuttleCraftAt ?pl))
         :effect (and (not (person_at ?p ?pl))
                      (not (shuttleCraftAt ?pl))
@@ -165,7 +168,7 @@
     )
 
     (:action transport_to_planet
-        :parameters (?trc - transChief ?p - personnel ?rm - transporter ?to - planet)
+        :parameters (?trc - transChief ?cap - capt ?p - personnel ?rm - transporter ?to - planet)
         :precondition (and (person_at ?p ?rm)
                            (person_at ?trc ?rm)
                            (not (person_at ?p ?to))
@@ -173,7 +176,8 @@
                            (healthy ?trc)
                            (healthy ?p))
         :effect (and (not (person_at ?p ?rm))
-                     (person_at ?p ?to))
+                     (person_at ?p ?to)
+                     (when (is_hostile ?to) (not (healthy ?cap))))
     )
 
     (:action charge_robot
@@ -212,7 +216,7 @@
     )
 
     (:action travel
-        :parameters (?s - ship ?nav - navig ?rm - bridge ?from ?to - planet)
+        :parameters (?s - ship ?cap - capt ?nav - navig ?rm - bridge ?from ?to - planet)
         :precondition (and (person_at ?nav ?rm)
                            (travel_order)
                            (ship_at ?from)
@@ -220,7 +224,9 @@
                            (healthy ?nav))
         :effect (and (ship_at ?to)
                      (not (ship_at ?from))
-                     (when (in_belt ?to)(damaged ?s)))
+                     (not (travel_order))
+                     (when (in_belt ?to)(damaged ?s))
+                     (when (is_hostile ?to) (not (healthy ?cap))))
     )
 
     (:action fix_ship
